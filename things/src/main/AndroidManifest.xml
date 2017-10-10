@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.learn.learniotraspberrypi">
+
+    <application>
+        <uses-library android:name="com.google.android.things" />
+
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.IOT_LAUNCHER" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+
+    <!--OTA updates for OEM apps are ignored if apps are sideloaded
+     When the device is rebooting, the operating system checks if a main apk -->
+    <!--(with action=MAIN, category=IOT_LAUNCHER) exists in the user data partition. If one exists, -->
+    <!--the device runs this apk. If one does not exist, the system checks for an apk in the OEM partition.-->
+
+</manifest>
