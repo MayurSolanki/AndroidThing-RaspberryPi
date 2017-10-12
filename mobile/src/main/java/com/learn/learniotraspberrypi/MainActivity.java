@@ -23,14 +23,20 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
         Log.d(TAG, "onCreate..... MQTT LED");
 
         try {
-            MqttClient client = new MqttClient("tcp://192.168.1.100:1883", "AndroidThingSub", new MemoryPersistence());
+            MqttClient client = new MqttClient("tcp://192.168.1.104:1883", "AndroidThingSub", new MemoryPersistence());
+            client.setTimeToWait(20000);
             client.setCallback(this);
             client.connect();
 
-            String topic = "topic/led";
+            String topic = "test/topic";
             client.subscribe(topic);
 
-            //client.publish();
+            String msg ="HelloAbcd";
+
+            MqttMessage mqttMessage = new MqttMessage();
+            mqttMessage.setPayload(msg.getBytes());
+
+            client.publish("test/topic",mqttMessage);
 
         } catch (MqttException e) {
             e.printStackTrace();
