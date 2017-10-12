@@ -5,7 +5,7 @@ android {
     buildToolsVersion "26.0.2"
     defaultConfig {
         applicationId "com.learn.learniotraspberrypi"
-        minSdkVersion 24
+        minSdkVersion 21
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
@@ -20,11 +20,26 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:support-v4:26.1.0'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
-    provided 'com.google.android.things:androidthings:0.4-devpreview'
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+
+    compile 'com.android.support:appcompat-v7:26.1.0'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
+    compile 'com.google.android.things:androidthings:0.4-devpreview'
+    compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
+
+//    compile 'com.android.support:appcompat-v7:26.1.0'
+//    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+//    compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
+//    implementation fileTree(dir: 'libs', include: ['*.jar'])
+//    implementation 'com.android.support:support-v4:26.1.0'
+//    testImplementation 'junit:junit:4.12'
+//    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+//    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+//    provided 'com.google.android.things:androidthings:0.4-devpreview'
+//    compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
+
 }

@@ -3,6 +3,10 @@ package com.learn.learniotraspberrypi;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -13,31 +17,56 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 public class MainActivity extends AppCompatActivity implements MqttCallback {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
+    EditText etMessage;
+    Button btPublishMessage;
+    MqttClient client;
+    TextView tvMessageReceived;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Log.d(TAG, "onCreate..... MQTT LED");
+        etMessage =(EditText)findViewById(R.id.et_publish_message);
+        btPublishMessage =(Button) findViewById(R.id.bt_publish_message);
+        tvMessageReceived =(TextView)findViewById(R.id.tv_message_received);
 
+//        MqttConnectOptions options = new MqttConnectOptions();
+//        options.setUserName("username");
+//        options.setPassword("password".toCharArray());
+//        client.connect(options);
+
+
+        connetToMosquittoServer();
+
+        subscribeToMosquittoBrocker();
+
+
+        btPublishMessage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if(client.isConnected()){
+                    publishMessage(etMessage.getText().toString().trim());
+                }else {
+                    connetToMosquittoServer();
+                    publishMessage(etMessage.getText().toString().trim());
+                    subscribeToMosquittoBrocker();
+                }
+
+
+
+            }
+        });
+
+
+    }
+
+    private void subscribeToMosquittoBrocker() {
+        String topic = "testtopic/1";
         try {
-            MqttClient client = new MqttClient("tcp://192.168.1.104:1883", "AndroidThingSub", new MemoryPersistence());
-            client.setTimeToWait(20000);
-            client.setCallback(this);
-            client.connect();
-
-            String topic = "test/topic";
             client.subscribe(topic);
-
-            String msg ="HelloAbcd";
-
-            MqttMessage mqttMessage = new MqttMessage();
-            mqttMessage.setPayload(msg.getBytes());
-
-            client.publish("test/topic",mqttMessage);
-
         } catch (MqttException e) {
             e.printStackTrace();
         }
@@ -45,10 +74,53 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
 
     }
 
+    private void publishMessage(String messgaeInput) {
+
+        try {
+            MqttMessage mqttMessage = new MqttMessage();
+            mqttMessage.setPayload(messgaeInput.getBytes());
+            client.publish("testtopic/1",mqttMessage);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void connetToMosquittoServer() {
+
+        AppLogger.e("Connecting to Mosquitto");
+        //
+//        tcp://localhost:1883
+//        http://192.168.3.92:1883
+        //tcp://broker.mqttdashboard.com:1883
+        try {
+            client = new MqttClient("tcp://broker.mqttdashboard.com:1883", MqttClient.generateClientId(), new MemoryPersistence());
+            client.setCallback(this);
+            client.connect();
+
+
+
+        } catch (MqttException e) {
+            e.printStackTrace();
+            AppLogger.e("MqttException connection getMessage: "+e.getMessage());
+            AppLogger.e("MqttException connection getReasonCode: "+e.getReasonCode());
+            AppLogger.e("MqttException connection getReasonCode: "+e.getCause());
+            AppLogger.e("MqttException connection getStackTrace: "+e.getStackTrace());
+        }
+
+        if(client.isConnected()){
+            AppLogger.e("Connected Successfully");
+        }else {
+            AppLogger.e("Connection failed");
+        }
+
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy");
+        AppLogger.e("onDestroy");
+
 
 
     }
@@ -60,7 +132,8 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
      */
     @Override
     public void connectionLost(Throwable cause) {
-        Log.d(TAG, "connectionLost....");
+        AppLogger.e("connectionLost....");
+
     }
 
     /**
@@ -96,10 +169,22 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
      */
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
-        String payload = new String(message.getPayload());
+        final String payload = new String(message.getPayload());
 
-        Log.d(TAG + " " + payload, payload);
+        AppLogger.e("messageArrived..." + payload);
+
+        runOnUiThread(new Runnable(){
+            public void run() {
+                tvMessageReceived.append(payload+"\n");
+            }
+        });
+
+
+
+
     }
+
+
 
     /**
      * Called when delivery for a message has been completed, and all
@@ -113,6 +198,9 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
      */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-        Log.d(TAG, "deliveryComplete....");
+
+        AppLogger.e("deliveryComplete..." + token);
+
+
     }
 }
