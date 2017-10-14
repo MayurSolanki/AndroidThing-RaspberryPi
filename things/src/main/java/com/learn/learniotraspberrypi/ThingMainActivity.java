@@ -16,10 +16,10 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.io.IOException;
 
-public class MainActivity extends Activity implements MqttCallback {
-    private static final String TAG = MainActivity.class.getSimpleName();
+public class ThingMainActivity extends Activity implements MqttCallback {
 
-    public static final String LED_PIN = "BCM13";
+
+    public static final String LED_PIN = "BCM4";
     private Gpio ledPin;
 
     @Override
@@ -27,10 +27,39 @@ public class MainActivity extends Activity implements MqttCallback {
         super.onCreate(savedInstanceState);
 
 
-        Log.d(TAG, "onCreate..... MQTT LED");
+        AppLogger.e("onCreate..... MQTT LED .. AnDROID Thing");
+
+
+        connetToMosquittoServer();
+
+        initiallyLedOff();
+
+
+
+
+
+    }
+
+    private void initiallyLedOff() {
+
+        PeripheralManagerService service = new PeripheralManagerService();
+        try {
+            // Create GPIO connection for LED.
+            ledPin = service.openGpio(LED_PIN);
+            // Configure as an output.
+            ledPin.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
+
+        } catch (IOException e) {
+            AppLogger.e("Error on PeripheralIO API : "+e);
+
+        }
+    }
+
+    private void connetToMosquittoServer() {
+
 
         try {
-            MqttClient client = new MqttClient("tcp://192.168.1.100:1883", "AndroidThingSub", new MemoryPersistence());
+            MqttClient client = new MqttClient("tcp://broker.mqttdashboard.com:1883", "AndroidThingSub", new MemoryPersistence());
             client.setCallback(this);
             client.connect();
 
@@ -43,28 +72,21 @@ public class MainActivity extends Activity implements MqttCallback {
             e.printStackTrace();
         }
 
-        PeripheralManagerService service = new PeripheralManagerService();
-        try {
-            // Create GPIO connection for LED.
-            ledPin = service.openGpio(LED_PIN);
-            // Configure as an output.
-            ledPin.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
-        } catch (IOException e) {
-            Log.e(TAG, "Error on PeripheralIO API", e);
-        }
-
 
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy");
+
+        AppLogger.e("onDestroy ");
 
         if (ledPin != null) {
             try {
                 ledPin.close();
             } catch (IOException e) {
-                Log.e(TAG, "Error on PeripheralIO API", e);
+                AppLogger.e("Error on PeripheralIO API "+e);
+
             }
         }
     }
@@ -76,7 +98,8 @@ public class MainActivity extends Activity implements MqttCallback {
      */
     @Override
     public void connectionLost(Throwable cause) {
-        Log.d(TAG, "connectionLost....");
+        AppLogger.e("connectionLost.... ");
+
     }
 
     /**
@@ -113,18 +136,18 @@ public class MainActivity extends Activity implements MqttCallback {
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
         String payload = new String(message.getPayload());
-        Log.d(TAG, payload);
+        AppLogger.e("payload.... "+payload);
         switch (payload) {
             case "ON":
-                Log.d(TAG, "LED ON");
+                AppLogger.e("LED Status.... "+"LED ON");
                 ledPin.setValue(true);
                 break;
             case "OFF":
-                Log.d(TAG, "LED OFF");
+                AppLogger.e("LED Status.... "+"LED OFF");
                 ledPin.setValue(false);
                 break;
             default:
-                Log.d(TAG, "Message not supported!");
+                AppLogger.e("Message not supported!");
                 break;
         }
 
@@ -142,6 +165,6 @@ public class MainActivity extends Activity implements MqttCallback {
      */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-        Log.d(TAG, "deliveryComplete....");
+        AppLogger.e("deliveryComplete....");
     }
 }

@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
     }
 
     private void subscribeToMosquittoBrocker() {
-        String topic = "testtopic/1";
+        String topic = "topic/led";
         try {
             client.subscribe(topic);
         } catch (MqttException e) {
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
         try {
             MqttMessage mqttMessage = new MqttMessage();
             mqttMessage.setPayload(messgaeInput.getBytes());
-            client.publish("testtopic/1",mqttMessage);
+            client.publish("topic/led",mqttMessage);
         } catch (MqttException e) {
             e.printStackTrace();
         }
@@ -89,10 +89,11 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
     private void connetToMosquittoServer() {
 
         AppLogger.e("Connecting to Mosquitto");
-        //
+
 //        tcp://localhost:1883
 //        http://192.168.3.92:1883
-        //tcp://broker.mqttdashboard.com:1883
+//        tcp://broker.mqttdashboard.com:1883
+
         try {
             client = new MqttClient("tcp://broker.mqttdashboard.com:1883", MqttClient.generateClientId(), new MemoryPersistence());
             client.setCallback(this);

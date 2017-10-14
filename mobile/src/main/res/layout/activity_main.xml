@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.learn.learniotraspberrypi.MainActivity">
+    tools:context="com.learn.learniotraspberrypi.ThingMainActivity">
 
     <TextView
         android:padding="10dp"
