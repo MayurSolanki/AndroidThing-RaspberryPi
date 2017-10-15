@@ -10,6 +10,7 @@ import com.google.android.things.pio.PeripheralManagerService;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
@@ -21,7 +22,7 @@ public class ThingMainActivity extends Activity implements MqttCallback {
 
     public static final String LED_PIN = "BCM4";
     private Gpio ledPin;
-
+    MqttClient client;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,12 +60,18 @@ public class ThingMainActivity extends Activity implements MqttCallback {
 
 
         try {
-            MqttClient client = new MqttClient("tcp://broker.mqttdashboard.com:1883", "AndroidThingSub", new MemoryPersistence());
+            client = new MqttClient("tcp://m10.cloudmqtt.com:17409", MqttClient.generateClientId(), new MemoryPersistence());
+            MqttConnectOptions options = new MqttConnectOptions();
+            options.setUserName("hqoqklmz");
+            options.setPassword("3YFYnRNNOCTM".toCharArray());
             client.setCallback(this);
-            client.connect();
+            client.connect(options);
+
 
             String topic = "topic/led";
             client.subscribe(topic);
+
+            AppLogger.e("Connected Successfully");
 
             //client.publish();
 
@@ -141,6 +148,7 @@ public class ThingMainActivity extends Activity implements MqttCallback {
             case "ON":
                 AppLogger.e("LED Status.... "+"LED ON");
                 ledPin.setValue(true);
+
                 break;
             case "OFF":
                 AppLogger.e("LED Status.... "+"LED OFF");

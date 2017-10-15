@@ -5,15 +5,25 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+import javax.net.SocketFactory;
 
 public class MainActivity extends AppCompatActivity implements MqttCallback {
 
@@ -21,6 +31,7 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
     Button btPublishMessage;
     MqttClient client;
     TextView tvMessageReceived;
+    Switch switchOnOff;
 
 
     @Override
@@ -31,11 +42,10 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
         etMessage =(EditText)findViewById(R.id.et_publish_message);
         btPublishMessage =(Button) findViewById(R.id.bt_publish_message);
         tvMessageReceived =(TextView)findViewById(R.id.tv_message_received);
+        switchOnOff=(Switch) findViewById(R.id.switch_on_off);
 
-//        MqttConnectOptions options = new MqttConnectOptions();
-//        options.setUserName("username");
-//        options.setPassword("password".toCharArray());
-//        client.connect(options);
+
+
 
 
         connetToMosquittoServer();
@@ -57,6 +67,19 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
 
 
 
+            }
+        });
+
+
+        switchOnOff.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+
+                if(b){
+                    publishMessage("ON");
+                }else {
+                    publishMessage("OFF");
+                }
             }
         });
 
@@ -90,16 +113,26 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
 
         AppLogger.e("Connecting to Mosquitto");
 
+
+
+
+
 //        tcp://localhost:1883
-//        http://192.168.3.92:1883
+//        tcp://192.168.1.102:1883
 //        tcp://broker.mqttdashboard.com:1883
+// tcp://broker.hivemq.com:1883
+//         tcp://0.0.0.0:1883
 
         try {
-            client = new MqttClient("tcp://broker.mqttdashboard.com:1883", MqttClient.generateClientId(), new MemoryPersistence());
+            client = new MqttClient("tcp://m10.cloudmqtt.com:17409", MqttClient.generateClientId(), new MemoryPersistence());
+            MqttConnectOptions options = new MqttConnectOptions();
+            options.setUserName("hqoqklmz");
+            options.setPassword("3YFYnRNNOCTM".toCharArray());
             client.setCallback(this);
-            client.connect();
+            client.connect(options);
 
 
+            AppLogger.e("Connected Successfully");
 
         } catch (MqttException e) {
             e.printStackTrace();
