@@ -39,32 +39,30 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        etMessage =(EditText)findViewById(R.id.et_publish_message);
-        btPublishMessage =(Button) findViewById(R.id.bt_publish_message);
-        tvMessageReceived =(TextView)findViewById(R.id.tv_message_received);
-        switchOnOff=(Switch) findViewById(R.id.switch_on_off);
-
-
-
+        etMessage = (EditText) findViewById(R.id.et_publish_message);
+        btPublishMessage = (Button) findViewById(R.id.bt_publish_message);
+        tvMessageReceived = (TextView) findViewById(R.id.tv_message_received);
+        switchOnOff = (Switch) findViewById(R.id.switch_on_off);
 
 
         connetToMosquittoServer();
 
         subscribeToMosquittoBrocker();
 
+        //getUartDeviceList();
+
 
         btPublishMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                if(client.isConnected()){
+                if (client.isConnected()) {
                     publishMessage(etMessage.getText().toString().trim());
-                }else {
+                } else {
                     connetToMosquittoServer();
                     publishMessage(etMessage.getText().toString().trim());
                     subscribeToMosquittoBrocker();
                 }
-
 
 
             }
@@ -75,16 +73,39 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
 
-                if(b){
-                    publishMessage("ON");
-                }else {
-                    publishMessage("OFF");
+                if (b) {
+                    if (client.isConnected()) {
+                        publishMessage("ON");
+                    } else {
+                        connetToMosquittoServer();
+                        publishMessage("ON");
+                    }
+                } else {
+
+                    if (client.isConnected()) {
+                        publishMessage("OFF");
+                    } else {
+                        connetToMosquittoServer();
+                        publishMessage("ON");
+                    }
+
                 }
             }
         });
 
 
     }
+
+//    private void getUartDeviceList() {
+//        PeripheralManagerService manager = new PeripheralManagerService();
+//        List<String> deviceList = manager.getUartDeviceList();
+//        if (deviceList.isEmpty()) {
+//            Log.i(TAG, "No UART port available on this device.");
+//        } else {
+//            Log.i(TAG, "List of available devices: " + deviceList);
+//        }
+//
+//    }
 
     private void subscribeToMosquittoBrocker() {
         String topic = "topic/led";
@@ -102,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
         try {
             MqttMessage mqttMessage = new MqttMessage();
             mqttMessage.setPayload(messgaeInput.getBytes());
-            client.publish("topic/led",mqttMessage);
+            client.publish("topic/led", mqttMessage);
         } catch (MqttException e) {
             e.printStackTrace();
         }
@@ -114,9 +135,6 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
         AppLogger.e("Connecting to Mosquitto");
 
 
-
-
-
 //        tcp://localhost:1883
 //        tcp://192.168.1.102:1883
 //        tcp://broker.mqttdashboard.com:1883
@@ -124,27 +142,38 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
 //         tcp://0.0.0.0:1883
 
         try {
-            client = new MqttClient("tcp://m10.cloudmqtt.com:17409", MqttClient.generateClientId(), new MemoryPersistence());
+//            client = new MqttClient("tcp://m10.cloudmqtt.com:17409", MqttClient.generateClientId(), new MemoryPersistence());
+//            MqttConnectOptions options = new MqttConnectOptions();
+//            options.setUserName("hqoqklmz");
+//            options.setPassword("3YFYnRNNOCTM".toCharArray());
+//            client.setCallback(this);
+//            client.connect(options);
+
+
+
+            client = new MqttClient("tcp://192.168.1.104:1883", MqttClient.generateClientId(), new MemoryPersistence());
             MqttConnectOptions options = new MqttConnectOptions();
-            options.setUserName("hqoqklmz");
-            options.setPassword("3YFYnRNNOCTM".toCharArray());
+            options.setUserName("steve");
+            options.setPassword("00123456789abcdef".toCharArray());
             client.setCallback(this);
             client.connect(options);
+
+
 
 
             AppLogger.e("Connected Successfully");
 
         } catch (MqttException e) {
             e.printStackTrace();
-            AppLogger.e("MqttException connection getMessage: "+e.getMessage());
-            AppLogger.e("MqttException connection getReasonCode: "+e.getReasonCode());
-            AppLogger.e("MqttException connection getReasonCode: "+e.getCause());
-            AppLogger.e("MqttException connection getStackTrace: "+e.getStackTrace());
+            AppLogger.e("MqttException connection getMessage: " + e.getMessage());
+            AppLogger.e("MqttException connection getReasonCode: " + e.getReasonCode());
+            AppLogger.e("MqttException connection getReasonCode: " + e.getCause());
+            AppLogger.e("MqttException connection getStackTrace: " + e.getStackTrace());
         }
 
-        if(client.isConnected()){
+        if (client.isConnected()) {
             AppLogger.e("Connected Successfully");
-        }else {
+        } else {
             AppLogger.e("Connection failed");
         }
 
@@ -155,6 +184,16 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
         super.onDestroy();
         AppLogger.e("onDestroy");
 
+
+
+        try {
+            if(client != null){
+                client.disconnect();
+                client.close();
+            }
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
 
 
     }
@@ -207,17 +246,14 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
 
         AppLogger.e("messageArrived..." + payload);
 
-        runOnUiThread(new Runnable(){
+        runOnUiThread(new Runnable() {
             public void run() {
-                tvMessageReceived.append(payload+"\n");
+                tvMessageReceived.append(payload + "\n");
             }
         });
 
 
-
-
     }
-
 
 
     /**
@@ -233,8 +269,19 @@ public class MainActivity extends AppCompatActivity implements MqttCallback {
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
 
-        AppLogger.e("deliveryComplete..." + token);
 
+        try {
+            AppLogger.e("deliveryComplete..." + token.getMessage());
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
 
     }
 }

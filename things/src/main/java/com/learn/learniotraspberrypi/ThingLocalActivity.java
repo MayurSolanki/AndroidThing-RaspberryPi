@@ -2,7 +2,6 @@ package com.learn.learniotraspberrypi;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.google.android.things.pio.Gpio;
 import com.google.android.things.pio.PeripheralManagerService;
@@ -17,67 +16,46 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.io.IOException;
 
-public class ThingMainActivity extends Activity implements MqttCallback {
+public class ThingLocalActivity extends Activity implements MqttCallback {
 
 
-    public static final String LED_PIN = "BCM4";
-    private Gpio ledPin;
     MqttClient client;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
 
-        AppLogger.e("onCreate..... MQTT LED .. AnDROID Thing");
+        AppLogger.e("onCreate..... MQTT LED  Android Thing");
 
 
         connetToMosquittoServer();
 
-        initiallyLedOff();
-
     }
 
-    private void initiallyLedOff() {
 
-        PeripheralManagerService service = new PeripheralManagerService();
-        try {
-            // Create GPIO connection for LED.
-
-            ledPin = service.openGpio(LED_PIN);
-
-
-            AppLogger.e("service.getGpioList() : "+service.getGpioList());
-            AppLogger.e("service.getI2cBusList() : "+service.getI2cBusList());
-            AppLogger.e("service.getI2sDeviceList() : "+service.getI2sDeviceList());
-            AppLogger.e("service.getPwmList() : "+service.getPwmList());
-            AppLogger.e("service.getSpiBusList() : "+service.getSpiBusList());
-            AppLogger.e("service.getUartDeviceList() : "+service.getUartDeviceList());
-
-
-
-
-            // Configure as an output.
-            ledPin.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
-
-        } catch (IOException e) {
-            AppLogger.e("Error on PeripheralIO API : "+e);
-
-        }
-    }
 
     private void connetToMosquittoServer() {
 
         try {
-            client = new MqttClient("tcp://m10.cloudmqtt.com:17409", MqttClient.generateClientId(), new MemoryPersistence());
+            //        tcp://localhost:1883
+//        tcp://192.168.1.102:1883
+//        tcp://broker.mqttdashboard.com:1883
+// tcp://broker.hivemq.com:1883
+//         tcp://0.0.0.0:1883
+            //http://192.168.1.102:1883
+            //tcp://localhost:1883
+
+
+            client = new MqttClient("tcp://192.168.1.104:1883", MqttClient.generateClientId(), new MemoryPersistence());
             MqttConnectOptions options = new MqttConnectOptions();
-            options.setUserName("hqoqklmz");
-            options.setPassword("3YFYnRNNOCTM".toCharArray());
+            options.setUserName("steve");
+            options.setPassword("00123456789abcdef".toCharArray());
             client.setCallback(this);
             client.connect(options);
 
-
             String topic = "topic/led";
             client.subscribe(topic);
+
 
             AppLogger.e("Connected Successfully");
 
@@ -85,6 +63,12 @@ public class ThingMainActivity extends Activity implements MqttCallback {
 
         } catch (MqttException e) {
             e.printStackTrace();
+
+            AppLogger.e("Connection Error : "+e.getMessage());
+            AppLogger.e("Connection Error : "+e.getReasonCode());
+            AppLogger.e("Connection Error : "+e.getStackTrace());
+            AppLogger.e("Connection Error : "+e.getLocalizedMessage());
+
         }
 
 
@@ -96,14 +80,7 @@ public class ThingMainActivity extends Activity implements MqttCallback {
 
         AppLogger.e("onDestroy ");
 
-        if (ledPin != null) {
-            try {
-                ledPin.close();
-            } catch (IOException e) {
-                AppLogger.e("Error on PeripheralIO API "+e);
 
-            }
-        }
     }
 
     /**
@@ -152,20 +129,7 @@ public class ThingMainActivity extends Activity implements MqttCallback {
     public void messageArrived(String topic, MqttMessage message) throws Exception {
         String payload = new String(message.getPayload());
         AppLogger.e("payload.... "+payload);
-        switch (payload) {
-            case "ON":
-                AppLogger.e("LED Status.... "+"LED ON");
-                ledPin.setValue(true);
 
-                break;
-            case "OFF":
-                AppLogger.e("LED Status.... "+"LED OFF");
-                ledPin.setValue(false);
-                break;
-            default:
-                AppLogger.e("Message not supported!");
-                break;
-        }
 
     }
 

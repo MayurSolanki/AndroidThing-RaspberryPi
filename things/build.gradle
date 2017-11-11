@@ -5,14 +5,12 @@ android {
     buildToolsVersion "26.0.2"
     defaultConfig {
         applicationId "com.learn.learniotraspberrypi"
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        jackOptions {
-            enabled true
-        }
+
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -24,6 +22,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    dexOptions {
+        javaMaxHeapSize "12g"
+    }
 }
 
 dependencies {
@@ -34,9 +35,10 @@ dependencies {
 
     compile 'com.android.support:appcompat-v7:26.1.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
-    compile 'com.google.android.things:androidthings:0.4-devpreview'
-    compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.0.2'
+    compile 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
+
+    compile 'com.google.android.things:androidthings:0.5.1-devpreview'
+    compile 'com.google.android.things.contrib:driver-button:0.3'
 
 //    compile 'com.android.support:appcompat-v7:26.1.0'
 //    compile 'com.android.support.constraint:constraint-layout:1.0.2'
